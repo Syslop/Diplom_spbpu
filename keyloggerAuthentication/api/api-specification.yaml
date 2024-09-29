@@ -1,0 +1,191 @@
+openapi: 3.0.0
+info:
+  title: Keylogger Authentication API
+  version: 0.0.1
+tags:
+  - name: user
+    description: Requests for working with users
+  - name: dataset
+    description: Requests for working with dataset
+paths:
+  /user/login/:
+    post:
+      tags:
+        - user
+      summary: Залогиниться в системе
+      operationId: getAuth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginRequest'
+      responses:
+        '200':
+          description: Успешный ответ на запрос авторизации в системе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLoginResponse'
+  /user/add/:
+    post:
+      tags:
+        - user
+      summary: Зарегистрировать нового пользователя
+      operationId: addUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAddRequest'
+      responses:
+        '200':
+          description: Успешный ответ на запрос регистрации нового пользователя
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAddResponse'
+  /dataset/:
+    get:
+      tags:
+        - dataset
+      summary: Выгрузить датасет для обучения модели
+      operationId: getDataset
+      responses:
+        '200':
+          description: Усешный запрос выгрузки датасета для обучения модели
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+components:
+  schemas:
+    ErrorResponse:
+      description: Ошибка от приложения
+      type: object
+      required:
+        - status
+        - error
+        - message
+        - exception
+        - path
+        - timestamp
+      properties:
+        status:
+          description: Статус ошибки
+          type: string
+          example: "500"
+          pattern: "^[45]0[0-9]{1}$"  # Ошибка сервера (5xx) или клиента (4xx)
+          maxLength: 3  # Максимальная длина строки
+        error:
+          description: Описание ошибки
+          type: string
+          example: "Internal Server Error"
+        message:
+          description: Сообщение об ошибке
+          type: string
+          example: "Произошла ошибка при обработке запроса"
+        exception:
+          description: Имя исключения
+          type: string
+          example: "NullPointerException"
+        path:
+          description: Путь запроса, вызвавшего ошибку
+          type: string
+          example: "/api/v1/users/123"
+        timestamp:
+          description: Временная метка ошибки
+          type: string
+          format: date-time  # Формат даты-времени
+          example: "2024-02-06T12:30:45Z"
+      additionalProperties: false
+    UserLoginRequest:
+      description: "Запрос на вход пользователя"
+      required:
+        - user
+        - metric
+      type: "object"
+      properties:
+        user:
+          $ref: '#/components/schemas/UserItem'
+        metric:
+          $ref: '#/components/schemas/MetricItem'
+    UserItem:
+      description: "Информация о пользователе"
+      type: "object"
+      required:
+        - login
+        - password
+      properties:
+        login:
+          description: "Логин"
+          type: "string"
+        password:
+          description: "Пароль"
+          type: "string"
+      additionalProperties: false
+    MetricItem:
+      description: "Метрики клавиатурного ввода"
+      type: "object"
+      required:
+        - speed
+        - error
+        - time
+        - averagePause
+      properties:
+        speed:
+          description: "Скорость ввода текста"
+          type: double
+        error:
+          description: "Количество ошибок"
+          type: double
+        time:
+          description: "Время ввода текста"
+          type: double
+        averagePause:
+          description: "Среднее значение времени пауз между нажатием клавиш"
+          type: double
+      additionalProperties: false
+    UserLoginResponse:
+      description: "Ответ на вход пользователя"
+      required:
+        - id
+        - login
+        - isLogin
+      type: "object"
+      properties:
+        id:
+          description: "Идентификатор пользователя"
+          type: "string"
+        login:
+          description: "Логин"
+          type: "string"
+        isLogin:
+          description: "Пользователь авторизован"
+          type: boolean
+    UserAddRequest:
+      description: "Запрос на регистрацию пользователя"
+      required:
+        - user
+        - metric
+      type: "object"
+      properties:
+        user:
+          $ref: '#/components/schemas/UserItem'
+        metric:
+          $ref: '#/components/schemas/MetricItem'
+    UserAddResponse:
+      description: "Ответ на регистрацию пользователя"
+      required:
+        - id
+        - login
+      type: "object"
+      properties:
+        id:
+          description: "Идентификатор пользователя"
+          type: "string"
+        login:
+          description: "Логин"
+          type: "string"
